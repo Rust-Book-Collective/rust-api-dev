@@ -1,0 +1,31 @@
+name: deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set timezone
+        uses: szenius/set-timezone@v1.0
+        with:
+          timezoneLinux: "Europe/Budapest"
+
+      - name: Check date and time
+        run: date
+
+      - name: Run zola build
+        run: docker run -v ${{ github.workspace }}:/app ghcr.io/sapati/zola:v0.17.1-hu -r app build
+
+      - name: Deploy to Cloudflare Workers with Wrangler
+        uses: cloudflare/wrangler-action@2.0.0
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_TOKEN }}
+          command: pages publish public --project-name rust-api-dev
+
