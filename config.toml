@@ -1,5 +1,5 @@
 # The URL the site will be built for
-base_url = "https://rust-api-dev.pages.dev/"
+base_url = "https://rust-api.dev/"
 title = "rust-api.dev"
 description = "API development with Rust"
 
@@ -101,5 +101,5 @@ site_links_search_box = false
 
 # Footer contents
 [extra.footer]
-info = 'Powered by <a href="https://www.getzola.org/">Zola</a>, and <a href="https://github.com/aaranxu/adidoks">AdiDoks</a>'
+info = 'Powered by <a href="https://www.getzola.org/">Zola</a> and <a href="https://github.com/aaranxu/adidoks">AdiDoks</a>'
 
