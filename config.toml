@@ -46,10 +46,10 @@ highlight_code = true
 # github = "https://github.com/aaranxu"
 # twitter = "https://twitter.com/aaranxu"
 # email = "aaranxu@outlook.com"
-ganalytics = ""  # Google Analytics code
+ganalytics = "G-T55T07FSJJ"  # Google Analytics code
 
 # If running on netlify.app site, set to true
-is_netlify = true
+is_netlify = false
 
 # Set HTML file language
 language_code = "en-US"
@@ -64,7 +64,7 @@ title_addition = "Modern Documentation Theme"
 
 # Set date format in blog publish metadata
 timeformat = "%Y-%m-%d %H:%M:%S" # e.g. 2021-05-01 09:19:42
-timezone = "UTC"
+timezone = "Europe/Budapest"
 
 # Edit page on reposity or not
 edit_page = false
