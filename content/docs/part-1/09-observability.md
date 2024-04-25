@@ -7,6 +7,7 @@ draft = false
 weight = 1090
 sort_by = "weight"
 template = "docs/page.html"
+slug = "observability"
 
 [extra]
 lead = ""

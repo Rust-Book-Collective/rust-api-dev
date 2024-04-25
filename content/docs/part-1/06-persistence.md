@@ -7,6 +7,7 @@ draft = false
 weight = 1060
 sort_by = "weight"
 template = "docs/page.html"
+slug = "persistence"
 
 [extra]
 lead = ""

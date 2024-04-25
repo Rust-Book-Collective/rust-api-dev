@@ -7,6 +7,7 @@ draft = false
 weight = 1001
 sort_by = "weight"
 template = "docs/page.html"
+slug = "authors"
 
 [extra]
 lead = ""

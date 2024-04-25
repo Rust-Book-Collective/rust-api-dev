@@ -7,6 +7,7 @@ draft = false
 weight = 1080
 sort_by = "weight"
 template = "docs/page.html"
+slug = "resiliency"
 
 [extra]
 lead = ""

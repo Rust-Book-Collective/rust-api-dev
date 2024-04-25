@@ -7,6 +7,7 @@ draft = false
 weight = 1070
 sort_by = "weight"
 template = "docs/page.html"
+slug = "api-design"
 
 [extra]
 lead = ""

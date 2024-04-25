@@ -7,6 +7,7 @@ draft = false
 weight = 1040
 sort_by = "weight"
 template = "docs/page.html"
+slug = "application-structure"
 
 [extra]
 lead = ""

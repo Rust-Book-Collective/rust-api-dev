@@ -7,6 +7,7 @@ draft = false
 weight = 1999
 sort_by = "weight"
 template = "docs/page.html"
+slug = "license"
 
 [extra]
 lead = ""

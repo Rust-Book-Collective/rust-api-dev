@@ -7,6 +7,7 @@ draft = false
 weight = 1050
 sort_by = "weight"
 template = "docs/page.html"
+slug = "tokio-hyper-axum"
 
 [extra]
 lead = ""

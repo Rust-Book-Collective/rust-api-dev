@@ -7,6 +7,7 @@ draft = false
 weight = 1002
 sort_by = "weight"
 template = "docs/page.html"
+slug = "preface"
 
 [extra]
 lead = ""
