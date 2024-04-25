@@ -4,7 +4,7 @@ description = ""
 date = 2021-05-01T18:20:00+00:00
 updated = 2021-05-01T18:20:00+00:00
 draft = false
-weight = 1040
+weight = 1050
 sort_by = "weight"
 template = "docs/page.html"
 
@@ -1364,7 +1364,7 @@ pub async fn get(
 and returns a single post in the response or `404 Not Found` when no
 matching post was found.
 
-## Authentication and authorization
+## Authentication
 
 Up until now we managed to create a few basic CRUD endpoints for our blog
 service. Now we have to implement authentication and authorization.

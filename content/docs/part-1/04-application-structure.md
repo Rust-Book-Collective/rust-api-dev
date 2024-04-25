@@ -4,7 +4,7 @@ description = ""
 date = 2021-05-01T18:20:00+00:00
 updated = 2021-05-01T18:20:00+00:00
 draft = false
-weight = 1030
+weight = 1040
 sort_by = "weight"
 template = "docs/page.html"
 
@@ -22,7 +22,7 @@ a single unified application configuration. You will also
 learn how to add different CLI commands to your application
 to make simple tasks like running migrations easier.
 
-## Structure for multiple CLI commands, subcommands
+## Structure for CLI commands
 
 First we will tackle command line argument parsing, we will use the
 `clap` crate for that. You will learn how to create different
@@ -402,7 +402,7 @@ error: a value is required for '--port <PORT>' but none was supplied
 For more information, try '--help'.
 ```
 
-## Processing of command line parameters
+## Command line parameters
 
 TBD: more examples, like alias, required, how to specify and argument
 multiple times, etc.
@@ -817,7 +817,7 @@ Hello World!
 The configuration file format is not limited to JSON, the `config` crate
 can use TOML, YAML, INI and others too.
 
-### Pass the configuration to the subcommands
+### Subcommands
 
 One more thing to do: we have to pass the settings to all the subcommands,
 so they can use them. Currently, we call the `commands` module this way
@@ -872,11 +872,11 @@ pub fn handle(
 Do not forget to add the `use crate::settings::Settings` statement to
 the top of all these command modules.
 
-## Loading and dynamic reloading of application configuration
+## Loading configuration
 
 TBD @nikola?
 
-## Plan for different application environments
+## Different environments
 
 Your application will most probably run in different target environments.
 First in your own development environment, then in some staging or
