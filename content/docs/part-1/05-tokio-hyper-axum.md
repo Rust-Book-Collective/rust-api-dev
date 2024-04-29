@@ -1763,6 +1763,65 @@ pub async fn create(
 }
 ```
 
+To implement a more realistic `login` method, let's check the existence
+of the user in the `user_service`:
+
+```rust
+pub async fn login(
+    State(state): State<Arc<ApplicationState>>,
+    Json(payload): Json<LoginRequest>,
+) -> Result<Json<LoginResponse>, AppError> {
+    let user = match state.user_service.get_user_by_name(&payload.username).await {
+        Ok(user) => user,
+        Err(e) => {
+            return Err(AppError::from((
+                StatusCode::UNAUTHORIZED,
+                anyhow::anyhow!("Invalid username or password"),
+            )))
+        }
+    };
+    ...
+}
+```
+
+This can be extended to verify the password of the user too. In a naive
+implementation by simply comparing the password to a stored value.
+In a more realistic implementation, using password hashes,
+based on the `argon2` crate for example. One way to encrypt a password:
+
+```rust
+use argon2::Argon2;
+use password_hash::rand_core::OsRng;
+use password_hash::{PasswordHasher, SaltString};
+
+fn encrypt_password(password: &str) -> anyhow::Result<String> {
+    let salt = SaltString::generate(&mut OsRng);
+    let argon2 = Argon2::default();
+
+    if let Ok(hash) = argon2.hash_password(password.as_bytes(), &salt) {
+        Ok(hash.to_string())
+    } else {
+        Err(anyhow!("Failed to hash password"))
+    }
+}
+```
+
+and to verify it:
+
+```rust
+use argon2::Argon2;
+use password_hash::{PasswordHash, PasswordVerifier};
+
+fn validate_password(password: &str, hash: &str) -> anyhow::Result<String> {
+    let argon2 = Argon2::default();
+    let parsed_hash = PasswordHash::new(hash).map_err(|e| anyhow!(e.to_string()))?;
+
+    argon2
+        .verify_password(password.as_bytes(), &parsed_hash)
+        .map_err(|_e| anyhow!("Failed to verify password"))
+}
+```
+
 ## The middleware pattern
 
 Axum's middleware or layer concept builds on `tower` and `tower-http`.

@@ -286,3 +286,202 @@ another environment variable, `APP__DATABASE__URL`:
 $ export APP__DATABASE__URL=mysql://user:password@127.0.0.1/sampledb
 ```
 
+We already had an `ApplicationState` configuration in `src/commands/serve.rs`:
+
+```rust
+let state = Arc::new(ApplicationState::new(settings)?);
+```
+
+Now we have to extend this with a database connection:
+
+```rust
+let db_url = settings
+    .database
+    .url
+    .clone()
+    .expect("Database URL is not set");
+let pool = sqlx::MySqlPool::connect(&db_url).await?;
+
+let state = Arc::new(ApplicationState::new(settings, pool)?);
+```
+
+We create a new `MySqlPool` and pass it to the `ApplicationState` constructor.
+In the constructor, we use the pool to configure a new `UserService` 
+implementation, this time based on MySQL:
+
+```rust
+pub struct ApplicationState {
+    pub settings: ArcSwap<Settings>,
+    pub user_service: Arc<MySQLUserService>,
+    pub post_service: Arc<InMemoryPostService>,
+}
+
+impl ApplicationState {
+    pub fn new(settings: &Settings, pool: MySqlPool) -> anyhow::Result<Self> {
+        Ok(Self {
+            settings: ArcSwap::new(Arc::new((*settings).clone())),
+            user_service: Arc::new(MySQLUserService::new(pool)),
+            post_service: Arc::new(InMemoryPostService::default()),
+        })
+    }
+}
+```
+
+The `MySQLUserService` implementation is in `src/services/user.rs`.
+It implements the same `UserService` trait as the `InMemoryUserService`, but
+uses `sqlx` to interact with the database. The underlying data model and
+the request-response structures are the same. The constructor simply
+creates a new instance of the service, storing the database pool:
+
+```rust
+pub struct MySQLUserService {
+    pub pool: MySqlPool,
+}
+
+impl MySQLUserService {
+    pub fn new(pool: MySqlPool) -> Self {
+        Self { pool }
+    }
+}
+```
+
+Now the trait implementation uses the pool to execute SQL queries. For example,
+the `get_user_by_id` method looks like this:
+
+```rust
+impl UserService for MySQLUserService {
+    async fn get_user_by_id(&self, id: i64) -> anyhow::Result<User> {
+        let res = sqlx::query!(
+            r#"
+            SELECT id, username, password, status, created, updated, last_login
+            FROM users
+            WHERE id = ?
+            "#,
+            id
+        );
+
+        res.fetch_one(&self.pool)
+            .await
+            .map(|row| User {
+                id: row.id as i64,
+                username: row.username,
+                password: row.password,
+                status: UserStatus::from(row.status),
+                created: row.created.unwrap_or_default(),
+                updated: row.updated.unwrap_or_default(),
+                last_login: row.last_login,
+            })
+            .map_err(|e| anyhow::anyhow!(e).context(format!("Failed to get user by id: {}", id)))
+    }
+    ...
+}
+```
+
+The `sqlx::query!` macro is used to create a new SQL query. The question
+marks are placeholders for parameter binding. Here we bind a single parameter,
+the `id` variable. The `fetch_one` method is used to execute the query and
+retrieve a single row from the result set. The row is then converted into a
+`User` struct. If the query fails, an error is returned.
+
+The database stores the `status` enum as an integer, so we have to convert it
+using the `From` trait in `src/model.rs`:
+
+```rust
+impl From<i32> for UserStatus {
+    fn from(value: i32) -> Self {
+        match value {
+            1 => UserStatus::Active,
+            2 => UserStatus::Blocked,
+            _ => UserStatus::Active,
+        }
+    }
+}
+
+impl From<UserStatus> for i32 {
+    fn from(value: UserStatus) -> Self {
+        match value {
+            UserStatus::Active => 1,
+            UserStatus::Blocked => 2,
+        }
+    }
+}
+```
+
+The `create_user` method works similarly:
+
+```rust
+async fn create_user(&mut self, req: CreateUserRequest) -> anyhow::Result<User> {
+    let query = sqlx::query!(
+        r#"
+            INSERT INTO users ( username, password, status, created, updated, last_login )
+            VALUES ( ?, ?, ?, NOW(), NOW(), NULL )
+        "#,
+         req.username, req.password, i32::from(req.status));
+
+    let res = query.execute(&self.pool)
+        .await?
+        .last_insert_id();
+
+    let id: i64 = res.try_into().or_else(|_| anyhow::bail!("Failed to convert user id"))?;
+
+    let user = self.get_user_by_id(id).await?;
+
+    Ok(user)
+}
+```
+
+We create a new SQL query using the `sqlx::query!` macro, bind the parameters
+from the `CreateUserRequest` and execute the query. The `last_insert_id` method
+retrieves the ID assigned to the newly created user. We have to convert it
+into `i64` because we used this type in the `User` struct (another approach
+is to use the `u64` type for id fields).
+
+Finally, we retrieve the newly created record, so we can return it to the
+client, including the automatically calculated `created`, `updated` fields.
+
+The `update_user` method is quite similar again:
+
+```rust
+async fn update_user(&mut self, id: i64, req: UpdateUserRequest) -> anyhow::Result<User> {
+    let query = sqlx::query!(
+        r#"
+            UPDATE users
+            SET username = ?, password = ?, status = ?, updated = NOW(), last_login = ?
+            WHERE id = ?
+        "#,
+        req.username, req.password, i32::from(req.status), req.last_login, id);
+
+
+    query.execute(&self.pool).await?;
+
+    let user = self.get_user_by_id(id).await?;
+
+    Ok(user)
+}
+```
+
+The `delete_user` method is even more simple, because we don't have to return
+anything:
+
+```rust
+async fn delete_user(&mut self, id: i64) -> anyhow::Result<()> {
+    let query = sqlx::query!(
+        r#"
+            DELETE FROM users
+            WHERE id = ?
+        "#,
+        id);
+
+    query.execute(&self.pool).await?;
+
+    Ok(())
+}
+```
+
+After these modifications you can run `cargo sqlx prepare --workspace` and
+`cargo build` again and the application will use the database instead of the
+in-memory storage to retrieve and store user data. The login method, for
+example, will only accept a username when it is present in the database.
+
+
+
