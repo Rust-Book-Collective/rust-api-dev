@@ -23,6 +23,9 @@ a single unified application configuration. You will also
 learn how to add different CLI commands to your application
 to make simple tasks like running migrations easier.
 
+You can find the sample codes on
+[GitHub](https://github.com/Rust-Book-Collective/rust-api-code/tree/main/application-structure/application-structure)
+
 ## Structure for CLI commands
 
 First we will tackle command line argument parsing, we will use the
@@ -422,6 +425,9 @@ The `config` crate provides an easy way to read configuration values from
 these sources. Our sample code will start off where we finished the processing
 of command line parameters. You can find the sample code for this section in 
 the `03-application-structure/application-configuration` folder.
+
+You can find the sample codes on
+[GitHub](https://github.com/Rust-Book-Collective/rust-api-code/tree/main/application-structure/application-configuration)
 
 First add our new dependencies to `cli_application/Cargo.toml`:
 

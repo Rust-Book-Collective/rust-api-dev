@@ -238,6 +238,9 @@ SQLx is a modern SQL client for Rust, which is designed to be easy to use and
 efficient. It is designed for asynchronous operation, so it depends on 
 executors like Tokio or async-std. We will use it with Tokio.
 
+You can find the sample codes on
+[GitHub](https://github.com/Rust-Book-Collective/rust-api-code/tree/main/persistence/sqlx)
+
 First, add the `sqlx` and `sqlx-macros` dependencies to the `Cargo.toml` file:
 
 ```toml

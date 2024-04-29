@@ -75,6 +75,9 @@ impose anyhow on consumers of the library.
 
 ### Error handling in main
 
+You can find the sample codes on
+[GitHub](https://github.com/Rust-Book-Collective/rust-api-code/tree/main/hello-world/error-handling)
+
 A convenient feature of rust is that you can add a `Result` return type to 
 your main function, and then just return an error from it. This will print 
 "Error: " followed by the error's debug representation, then exit with exit 

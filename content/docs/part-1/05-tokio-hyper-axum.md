@@ -21,6 +21,9 @@ underlying our application server. Your will learn how to
 compose middleware layers to add cross-cutting features
 to your API endpoints.
 
+You can find the sample codes on
+[GitHub](https://github.com/Rust-Book-Collective/rust-api-code/tree/main/tokio-hyper-axum/web-application)
+
 ## The tokio stack
 
 Our web application will be completely based on the `tokio.rs`
@@ -826,6 +829,9 @@ A `Post` has the following properties:
 - **created**: the time when the post was created
 - **updated**: the last time when the post's properties were modified
 
+You can find the sample codes on
+[GitHub](https://github.com/Rust-Book-Collective/rust-api-code/tree/main/tokio-hyper-axum/domain-model)
+
 We have to handle time, so we have to add the `chrono` crate to our
 dependencies in `Cargo.toml`:
 
@@ -1410,6 +1416,9 @@ environment.
 To test the JWT authentication we will add authorization to the 
 `POST /v1/posts` API endpoint, so only authorized users 
 will be able to submit new posts.
+
+You can find the sample codes on
+[GitHub](https://github.com/Rust-Book-Collective/rust-api-code/tree/main/tokio-hyper-axum/login)
 
 First, we have to add a new dependency in `cli_application/Cargo.toml`:
 

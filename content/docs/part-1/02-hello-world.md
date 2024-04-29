@@ -84,6 +84,9 @@ This way we can split our application into smaller, loosely coupled
 parts but we don't have to maintain a different repository for each 
 of them and we can work with the whole codebase in one IDE window.
 
+You can find the sample codes on 
+[GitHub](https://github.com/Rust-Book-Collective/rust-api-code/tree/main/hello-world/hello-world)
+
 ### Create a multi-package workspace
 
 To start our new project, let's create a directory to hold the workspace:
