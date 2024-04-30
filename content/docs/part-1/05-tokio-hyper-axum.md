@@ -1790,7 +1790,7 @@ and to verify it:
 use argon2::Argon2;
 use password_hash::{PasswordHash, PasswordVerifier};
 
-fn validate_password(password: &str, hash: &str) -> anyhow::Result<String> {
+fn validate_password(password: &str, hash: &str) -> anyhow::Result<()> {
     let argon2 = Argon2::default();
     let parsed_hash = PasswordHash::new(hash).map_err(|e| anyhow!(e.to_string()))?;
 
@@ -1799,6 +1799,21 @@ fn validate_password(password: &str, hash: &str) -> anyhow::Result<String> {
         .map_err(|_e| anyhow!("Failed to verify password"))
 }
 ```
+
+One problem: the in-memory user services starts up with an empty user list,
+so nobody can login now. Let's create a default admin user during application
+startup in the `src/commands/serve.rs` file:
+
+```rust
+state.user_service.create_user(CreateUserRequest {
+    username: "admin".to_string(),
+    password: encrypt_password("admin")?,
+    status: UserStatus::Active,
+}).await?;
+```
+
+Never do this in a real application! This is a security risk, because
+we hard-wired a well-known password in the code.
 
 ## The middleware pattern
 
