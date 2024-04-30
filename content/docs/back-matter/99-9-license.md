@@ -15,7 +15,12 @@ toc = true
 top = false
 +++
 
-The [Adidoks](https://github.com/aaranxu/adidoks) theme is licensed under the [MIT](https://github.com/aaranxu/adidoks/blob/main/LICENSE) license.
+The [Adidoks](https://github.com/aaranxu/adidoks) theme is licensed under the 
+[MIT](https://github.com/aaranxu/adidoks/blob/main/LICENSE) license.
+
+The sample codes are in their own repository on
+[GitHub](https://github.com/Rust-Book-Collective/rust-api-code), licensed under the 
+[MIT](https://github.com/Rust-Book-Collective/rust-api-code/blob/main/LICENSE) license.
 
 The content of this site licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
 
