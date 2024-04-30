@@ -483,5 +483,7 @@ After these modifications you can run `cargo sqlx prepare --workspace` and
 in-memory storage to retrieve and store user data. The login method, for
 example, will only accept a username when it is present in the database.
 
-
+You can implement the `MysqlPostService` in a similar way. Try to do it
+yourself, and if you get stuck, you can check the solution in the
+code samples.
 

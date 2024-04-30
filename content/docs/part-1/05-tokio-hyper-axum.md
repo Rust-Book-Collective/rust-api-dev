@@ -800,34 +800,12 @@ using curl, you will receive messages on the console like this:
 2024-02-11T10:53:36.602225Z DEBUG request{method=GET uri=/v1/hello ...
 ```
 
-## The domain model
+## The service layer
 
-We arrived to the point where we have to define the purpose of our
-sample application. Let's try to keep it simple, assume that our
-goal is to write the API for a blogging application. Our first two
-models will be the `User` who writes blog posts and the `Post` itself.
-
-A `User` has the following properties:
-
-- **id**: a unique identifier, an `i64` number for example
-- **username**: also unique, but String and changeable by the user
-- **password**: for user authentication
-- **status**: to indicate active or blocked state of the user
-- **created**: the time when the user was created
-- **updated**: the last time when the user's properties were modified
-- **last_login**: the last time when the user logged in 
-
-A `Post` has the following properties:
-
-- **id**: a unique id, an `i64` number
-- **author_id**: unique id of the author (the User who created the Post)
-- **title**: title of the blog post
-- **content**: content of the blog post
-- **slug**: a unique String identifier derived from the title, suitable
-  for usage in URLs
-- **status**: to indicate draft or published state of the post
-- **created**: the time when the post was created
-- **updated**: the last time when the post's properties were modified
+We already defined a very simple domain model in the previous chapter.
+Now we will build a service layer that can handle the CRUD operations
+on these entities. In the first iteration, we will use simple in-memory
+data structures, not a real database.
 
 You can find the sample codes on
 [GitHub](https://github.com/Rust-Book-Collective/rust-api-code/tree/main/tokio-hyper-axum/domain-model)

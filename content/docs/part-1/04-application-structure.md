@@ -879,9 +879,9 @@ pub fn handle(
 Do not forget to add the `use crate::settings::Settings` statement to
 the top of all these command modules.
 
-## Loading configuration
+## (Re)loading configuration
 
-TBD @nikola?
+TBD 
 
 ## Different environments
 
@@ -924,3 +924,31 @@ engineers will usually use some kind of configuration management system
 application, these can generate the required configuration files from
 templates and a predefined set of variables.
 
+## The domain model
+
+In the following chapters we will build a sample API. To keep
+things simple, it will be a simplified blogging application.
+Our first two models will be the `User` who writes blog posts and the `Post` 
+itself.
+
+A `User` has the following properties:
+
+- **id**: a unique identifier, an `i64` number for example
+- **username**: also unique, but String and changeable by the user
+- **password**: for user authentication
+- **status**: to indicate active or blocked state of the user
+- **created**: the time when the user was created
+- **updated**: the last time when the user's properties were modified
+- **last_login**: the last time when the user logged in
+
+A `Post` has the following properties:
+
+- **id**: a unique id, an `i64` number
+- **author_id**: unique id of the author (the User who created the Post)
+- **title**: title of the blog post
+- **content**: content of the blog post
+- **slug**: a unique String identifier derived from the title, suitable
+  for usage in URLs
+- **status**: to indicate draft or published state of the post
+- **created**: the time when the post was created
+- **updated**: the last time when the post's properties were modified
