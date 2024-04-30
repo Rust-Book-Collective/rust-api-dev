@@ -383,7 +383,7 @@ previous chapter. Now we will continue this journey by implementing
 the `serve` subcommand where we will start up a tokio runtime and 
 configure an axum router.
 
-First, add our new dependencies to `cli_application/Cargo.toml`: axum and
+First, add our new dependencies to `cli_app/Cargo.toml`: axum and
 tokio:
 
 ```toml
@@ -526,7 +526,7 @@ let listener = tokio::net::TcpListener::bind(addr).await?;
 axum::serve(listener, router.into_make_service()).await?;
 ```
 
-Run `cargo build` and `./target/debug/cli_application serve` and test the 
+Run `cargo build` and `./target/debug/cli_app serve` and test the 
 application using `curl`. You should receive something like this:
 
 ```bash
@@ -822,7 +822,7 @@ chrono = {  version = "0.4.34", features = ["serde"] }
 The `serde` feature is necessary if we want to serialize or deserialize
 date and time types.
 
-Let's create our model structs! Create a new file in `cli_application/src`
+Let's create our model structs! Create a new file in `cli_app/src`
 called `model.rs` and reference it from `lib.rs`:
 
 ```rust
@@ -978,7 +978,7 @@ We always return an `anyhow::Result` from our methods, because these operations
 may fail and the application has to handle the failures later.
 
 Let's see the implementation! Create a directory named `services` in 
-`cli_application/src` and a file named `post.rs` in it. Then create a file
+`cli_app/src` and a file named `post.rs` in it. Then create a file
 named `mod.rs` too and reference the `post` module from it:
 
 ```rust
@@ -1398,7 +1398,7 @@ will be able to submit new posts.
 You can find the sample codes on
 [GitHub](https://github.com/Rust-Book-Collective/rust-api-code/tree/main/tokio-hyper-axum/login)
 
-First, we have to add a new dependency in `cli_application/Cargo.toml`:
+First, we have to add a new dependency in `cli_app/Cargo.toml`:
 
 ```toml
 [dependencies]

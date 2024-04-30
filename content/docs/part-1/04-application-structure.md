@@ -33,7 +33,7 @@ First we will tackle command line argument parsing, we will use the
 subcommands for your CLI application and how to add parameters to them.
 
 We will start from a layout similar to the structure of the `hello_world`
-application, but the crate will be called `cli_application` this time.
+application, but the crate will be called `cli_app` this time.
 Create the `Cargo.toml` file for the workspace:
 
 ```toml
@@ -41,22 +41,22 @@ Create the `Cargo.toml` file for the workspace:
 resolver = "2"
 
 members = [
-  "cli_application"
+  "cli_app"
 ]
 ```
 
 and initialize the application crate:
 
 ```
-$ cargo new cli_application
+$ cargo new cli_app
 ```
 
-In `cli_application/Cargo.toml` add the `clap` crate to the list of
+In `cli_app/Cargo.toml` add the `clap` crate to the list of
 dependencies:
 
 ```toml
 [package]
-name = "cli_application"
+name = "cli_app"
 version = "0.1.0"
 edition = "2021"
 
@@ -80,11 +80,11 @@ the `main.rs` would become bloated really quickly.
 
 I prefer to put these things into a dedicated `commands` rust module.
 
-Let's go to our `cli_application/src` folder and create a new 
+Let's go to our `cli_app/src` folder and create a new 
 `commands` directory:
 
 ```bash
-$ cd cli_application/src
+$ cd cli_app/src
 $ mkdir commands
 $ cd commands
 ```
@@ -174,7 +174,7 @@ Now change the `main.rs` file too:
 
 ```rust
 use clap::{Arg, Command};
-use cli_application::commands;
+use cli_app::commands;
 
 pub fn main() -> anyhow::Result<()> {
   ...
@@ -182,8 +182,8 @@ pub fn main() -> anyhow::Result<()> {
 ```
 
 The name of the lib module is equivalent to the name of our crate: 
-`cli_application`, so to import the `commands` module we add 
-`use cli_application::commands` to `main.rs`.
+`cli_app`, so to import the `commands` module we add 
+`use cli_app::commands` to `main.rs`.
 
 Now make things a little more complicated: add more subcommands. 
 To do this, I will split the `commands` module into submodules. 
@@ -298,12 +298,12 @@ Do you see the pattern? If you need more subcommands you can simply add
 more submodules and call them in the `configure` and `handle` methods.
 
 Build our project again using `cargo build` and run the resulting
-binary from `target/debug/cli_application`. Whenever you call it
+binary from `target/debug/cli_app`. Whenever you call it
 without additional arguments, it will simply display a help message:
 
 ```bash
-$ ./target/debug/cli_application 
-Usage: cli_application [COMMAND]
+$ ./target/debug/cli_app 
+Usage: cli_app [COMMAND]
 
 Commands:
   hello  Hello World!
@@ -318,7 +318,7 @@ But if you specify one of the subcommands, `serve` for example, then
 the application will execute it:
 
 ```bash
-$ ./target/debug/cli_application serve
+$ ./target/debug/cli_app serve
 
 TBD: start the webserver on port ???
 
@@ -356,11 +356,11 @@ When we build and run our CLI application, we can get a detailed help
 message for our subcommand:
 
 ```bash
-$ ./target/debug/cli_application help serve
+$ ./target/debug/cli_app help serve
 
 Start HTTP server
 
-Usage: cli_application serve [OPTIONS]
+Usage: cli_app serve [OPTIONS]
 
 Options:
   -p, --port <PORT>  TCP port to listen on [default: 8080]
@@ -389,18 +389,18 @@ runs into and error. The `clap` argument parser displays useful error
 messages whenever you try to specify invalid arguments:
 
 ```bash
-$ ./target/debug/cli_application serve --port notanumber
+$ ./target/debug/cli_app serve --port notanumber
 error: invalid value 'notanumber' for '--port <PORT>': 
     invalid digit found in string
 
 For more information, try '--help'.
 
-$ ./target/debug/cli_application serve --port 100000
+$ ./target/debug/cli_app serve --port 100000
 error: invalid value '100000' for '--port <PORT>': 100000 is not in 0..=65535
 
 For more information, try '--help'.
 
-$ ./target/debug/cli_application serve --port 
+$ ./target/debug/cli_app serve --port 
 error: a value is required for '--port <PORT>' but none was supplied
 
 For more information, try '--help'.
@@ -429,7 +429,7 @@ the `03-application-structure/application-configuration` folder.
 You can find the sample codes on
 [GitHub](https://github.com/Rust-Book-Collective/rust-api-code/tree/main/application-structure/application-configuration)
 
-First add our new dependencies to `cli_application/Cargo.toml`:
+First add our new dependencies to `cli_app/Cargo.toml`:
 
 ```toml
 [dependencies]
@@ -445,8 +445,8 @@ variables. The `serde` crate will be used to deserialize json format
 configuration files.
 
 Next we have to build a structure for our application configuration.
-Create a file named `settings.rs` in `cli_application/src` and reference
-it from `cli_application/src/lib.rs`:
+Create a file named `settings.rs` in `cli_app/src` and reference
+it from `cli_app/src/lib.rs`:
 
 ```rust
 pub mod commands;
@@ -645,7 +645,7 @@ otherwise:
 
 ```rust
 use clap::{Arg, Command};
-use cli_application::commands;
+use cli_app::commands;
 
 fn main() -> anyhow::Result<()> {
     let mut command = Command::new("Sample CLI application")
@@ -714,7 +714,7 @@ Now go to the project root directory, compile and test our code:
 ```bash
 $ cargo build
 ...
-$ ./target/debug/cli_application hello
+$ ./target/debug/cli_app hello
 Error: configuration file "config.json" not found
 ```
 
@@ -731,7 +731,7 @@ Well, our `config.json` is missing. Create a simple one:
 And run again:
 
 ```bash
-$ ./target/debug/cli_application hello
+$ ./target/debug/cli_app hello
 db url: pgsql://
 log level: info
 Hello World!
@@ -742,7 +742,7 @@ Now define an environment variable to override the db url:
 
 ```bash
 $ export APP__DATABASE__URL="mysql://"
-$ ./target/debug/cli_application hello
+$ ./target/debug/cli_app hello
 db url: mysql://
 log level: info
 Hello World!
@@ -767,7 +767,7 @@ APP__LOGGING__LOG_LEVEL="warn"
 And run our application again:
 
 ```bash
-$ ./target/debug/cli_application 
+$ ./target/debug/cli_app 
 db url: mysql://
 log level: warn
 Hello World!
@@ -815,7 +815,7 @@ You have to remove the default value from the `command` configuration as well!
 Now you can delete `config.json` and the application still works as expected:
 
 ```bash
-$ ./target/debug/cli_application hello
+$ ./target/debug/cli_app hello
 db url: mysql://
 log level: info
 Hello World!
