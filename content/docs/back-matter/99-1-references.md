@@ -37,4 +37,7 @@ top = false
 - The Rustonimicon\
   [https://doc.rust-lang.org/nomicon/](https://doc.rust-lang.org/nomicon/)
 
-  
+- RESTful Web API Patterns & Practices Cookbook\
+  [https://www.oreilly.com/library/view/restful-web-api/9781098106737/](https://www.oreilly.com/library/view/restful-web-api/9781098106737/)
+
+
