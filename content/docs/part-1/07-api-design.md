@@ -192,9 +192,149 @@ An important thing to note: you usually do not break existing clients by adding
 new fields to a response, this is a safe way to extend your API without
 releasing a new version.
 
+## Documentation
 
-TBD
+If you write APIs that are used by others beyond you, those users have to 
+learn somehow how to use your API. This is where documentation comes into play.
 
+One way to document your API may be to simply write a text document that
+describes the API endpoints, the request and response formats, and the
+expected behavior of the API. This is a good start, but it is far more
+efficient to produce machine-readable documentation that can be used to
+generate human-readable documentation and client libraries automatically.
+
+Basically, you have to describe:
+
+- what endpoints are available
+- which methods are available for each endpoint
+- what parameters can be passed to each endpoint
+- what can be expected in the response
+
+There are two widely used formats for JSON API documentation: 
+[JSON Schema](https://json-schema.org/)
+and [OpenAPI](https://www.openapis.org). 
+JSON Schema is a specification for describing the structure
+of JSON data, while OpenAPI is a specification for describing RESTful APIs.
+The two formats are mostly compatible, but there are some differences.
+
+JSON Schema is primarily used to describe the structure of the JSON objects
+sent and received in the body of HTTP requests and responses. One implementation
+of JSON schema is the [schemars](https://docs.rs/schemars/latest/schemars)
+crate for Rust. It is quite simple to use:
+
+```rust
+#[derive(JsonSchema)]
+pub enum PostStatus {
+    Draft = 1,
+    Published = 2,
+}
+
+#[derive(JsonSchema)]
+pub struct Post {
+    pub id: i64,
+    pub author_id: i64,
+    pub slug: String,
+    pub title: String,
+    pub content: String,
+    pub status: PostStatus,
+    pub created: DateTime<Utc>,
+    pub updated: DateTime<Utc>,
+}
+
+let schema = schema_for!(Post);
+println!("{}", serde_json::to_string_pretty(&schema).unwrap());
+```
+
+The `JsonSchema` macro provides a way to automatically build a JSON schema 
+from a Rust data structure. The `schema_for!` macro generates the actual
+JSON representation of the schema that can be shared with the consumers of
+your API.
+
+The actual schema looks like this:
+
+```json
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Post",
+  "type": "object",
+  "required": [
+    "author_id",
+    "content",
+    "created",
+    "id",
+    "slug",
+    "status",
+    "title",
+    "updated"
+  ],
+  "properties": {
+    "author_id": {
+      "type": "integer",
+      "format": "int64"
+    },
+    "content": {
+      "type": "string"
+    },
+    "created": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "id": {
+      "type": "integer",
+      "format": "int64"
+    },
+    "slug": {
+      "type": "string"
+    },
+    "status": {
+      "$ref": "#/definitions/PostStatus"
+    },
+    "title": {
+      "type": "string"
+    },
+    "updated": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "definitions": {
+    "PostStatus": {
+      "type": "string",
+      "enum": [
+        "Draft",
+        "Published"
+      ]
+    }
+  }
+}
+```
+
+As you can see, the schema describes the structure of the `Post` data structure
+and the `PostStatus` enum. The schema includes information about the required
+fields, the types of the fields, and any constraints on the fields.
+
+You can use this schema to validate JSON data against the schema. For example,
+when you deserialize JSON POST data from an HTTP request, you can validate the 
+data against the schema to ensure that it conforms to the expected structure and
+return appropriate error messages if it does not. This is much more informative
+than simply returning a "deserialization failed" message.
+
+When working with a remote API as a consumer, you can use the JSON Schema to 
+generate client code that can serialize into API requests or deserialize 
+from API responses. This can save you a lot 
+of time and effort, as you do not have to write the client code manually. 
+Also, you can validate each response you receive from the API to ensure that 
+it conforms
+to the expected structure. For example, when an attribute is not optional, but
+the API returns it as `null`, you can raise an error.
+
+Browser-based consumers of your API can use the JSON Schema to generate 
+TypeScript types and [zod](https://zod.dev/) schemas to validate the data 
+they receive from your API. TypeScript also enables autocomplete for the
+attribute names in most IDEs, making the life of frontend developers easier.
+
+
+TBD:
 - documentation
 - JSON schema
 - OpenAPI
