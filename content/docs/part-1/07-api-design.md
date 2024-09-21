@@ -217,6 +217,8 @@ JSON Schema is a specification for describing the structure
 of JSON data, while OpenAPI is a specification for describing RESTful APIs.
 The two formats are mostly compatible, but there are some differences.
 
+### JSON Schema
+
 JSON Schema is primarily used to describe the structure of the JSON objects
 sent and received in the body of HTTP requests and responses. One implementation
 of JSON schema is the [schemars](https://docs.rs/schemars/latest/schemars)
@@ -333,11 +335,325 @@ TypeScript types and [zod](https://zod.dev/) schemas to validate the data
 they receive from your API. TypeScript also enables autocomplete for the
 attribute names in most IDEs, making the life of frontend developers easier.
 
+### OpenAPI
+
+OpenAPI is a specification for describing RESTful APIs. It is more complex
+than JSON Schema. OpenAPI can describe not only the structure of the JSON 
+data sent and received in the body of HTTP requests and responses, but also 
+the structure of the HTTP requests and responses themselves. This includes 
+the HTTP method, the URL path, the query parameters, the request headers, 
+the response status codes, and the response headers.
+
+OpenAPI describes the structure of the API in a machine-readable format that
+can be used to generate human-readable documentation and client libraries
+automatically. The format is a JSON file, something like this:
+
+```json
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "cli_app",
+    "description": "",
+    "license": {
+      "name": ""
+    },
+    "version": "0.1.0"
+  },
+  "servers": [
+    {
+      "url": "/v1",
+      "description": "Local server"
+    }
+  ],
+  "paths": {
+    "/hello": {
+      "get": {
+        "tags": [
+          "hello"
+        ],
+        "operationId": "hello",
+        "responses": {
+          "200": {
+            "description": "Hello World",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {}
+  },
+  "tags": [
+    {
+      "name": "hello",
+      "description": "Hello"
+    }
+  ]
+}
+```
+
+This OpenAPI file describes a simple API with a single endpoint `/hello`.
+The endpoint responds to a `GET` request with a `200` status code and a
+`text/plain` content type. The response body is a string.
+
+To generate this file, we can use the `utoipa` create.
+We can describe a single endpoint like this one in 
+`src/api/handlers/helpers.rs`:
+
+```rust
+use crate::state::ApplicationState;
+use axum::extract::State;
+use axum::http::StatusCode;
+use std::sync::Arc;
+
+#[utoipa::path(
+    get,
+    path = "/hello",
+    tag = "hello",
+    responses(
+        (status = 200, description = "Hello World", body = String),
+    ),
+)]
+pub async fn hello(State(state): State<Arc<ApplicationState>>) 
+        -> Result<String, StatusCode> {
+    
+    Ok(format!(
+        "\nHello world! Using configuration from {}\n\n",
+        state
+            .settings
+            .load()
+            .config
+            .location
+            .clone()
+            .unwrap_or("[nowhere]".to_string())
+    ))
+}
+```
+
+The `utoipa::path` macro defines an endpoint in the OpenAPI format.
+First we indicate that this endpoint uses the `GET` method and is located
+at `/hello`. We also tag this endpoint with the `hello` tag (so we can group
+the endpoints later). The `responses` attribute defines the possible responses
+of the endpoint. In this case, we only have one response, with a status code
+of `200`, a description of "Hello World", and a body of type `String`.
+
+To build the OpenAPI spec of the whole application, we create a struct in
+`src/api/v1.rs` and add the `#[derive(OpenApi)]` macro to it:
+
+```rust
+#[derive(OpenApi)]
+#[openapi(
+    paths(
+        handlers::hello::hello,
+    ),
+    components(
+        schemas(
+            
+        ),
+    ),
+    tags(
+        (name = "hello", description = "Hello"),
+    ),
+    servers(
+        (url = "/v1", description = "Local server"),
+    ),
+)]
+pub struct ApiDoc;
+```
+
+First we list the documented endpoints in the `paths` attribute. Then we
+list the tags we used in the `tags` attribute. We also define the server 
+available for API testing in the `servers` attribute. The `components` 
+attribute is used to define reusable components like schemas, but we do not
+have any in this example.
+
+Finally, in `src/api/mod.rs` we add the following snippet to generate the 
+OpenAPI  specification and a 
+[Swagger UI] (https://swagger.io/tools/swagger-ui/) at the same time:
+
+```rust
+pub fn configure(state: Arc<ApplicationState>) -> Router {
+    Router::new()
+        .merge(SwaggerUi::new("/swagger-ui").url(
+            "/v1/api-docs/openapi.json",
+            crate::api::v1::ApiDoc::openapi(),
+        ))
+        .nest("/v1", v1::configure(state))
+}
+```
+
+For the above code to work, we have to add the following dependencies to our
+`Cargo.toml`:
+
+```toml
+[dependencies]
+utoipa = { version = "4.2.0", features = ["axum_extras", "chrono"] }
+utoipa-swagger-ui = { version = "6", features = ["axum"] }
+```
+
+After building and starting the application, you can access the Swagger UI at
+`http://127.0.0.1/swagger-ui` and the OpenAPI specification at
+`http://127.0.0.1:8080/v1/api-docs/openapi.json`.
+
+The UI will look like this:
+
+{{ resize_image(path="docs/images/swagger.png", width=612, height=0, 
+op="fit_width") }}
+.
+
+Now we can document more complex endpoints, like the create post endpoint
+in `src/api/handlers/posts.rs`:
+
+```rust
+#[utoipa::path(
+    post,
+    path = "/posts",
+    tag = "posts",
+    request_body = CreatePostRequest,
+    responses(
+        (status = 200, description = "Post create", body = SinglePostResponse),
+    ),
+)]
+pub async fn create(
+    Extension(_claims): Extension<TokenClaims>,
+    State(state): State<Arc<ApplicationState>>,
+    Json(payload): Json<CreatePostRequest>,
+) -> Result<Json<SinglePostResponse>, AppError> {
+    let post = state.post_service.create_post(payload).await?;
+
+    let response = SinglePostResponse { data: post };
+
+    Ok(Json(response))
+}
+```
+
+This endpoint uses the `POST` method and is located at `/posts`. The request
+body is defined by the `CreatePostRequest` struct. The response is a `200`
+status code with a body of type `SinglePostResponse`.
+
+We did not document these structs for OpenAPI yet. To do so, we will use
+the `utoipa::ToSchema` derive macro:
+
+```rust
+use utoipa::ToSchema;
+
+#[derive(Deserialize, ToSchema)]
+pub struct CreatePostRequest {
+    pub author_id: i64,
+    pub slug: String,
+    pub title: String,
+    pub content: String,
+    pub status: PostStatus,
+}
+```
+
+The macro can automatically generate the JSON schema for basic types like
+`i64`, `String`, but for our own types like `PostStatus` we have to implement
+the `ToSchema` trait for ourselves by adding the `ToSchema` derive macro there
+too:
+
+```rust
+#[derive(Copy, Clone, Serialize, Deserialize, ToSchema)]
+pub enum PostStatus {
+    Draft = 1,
+    Published = 2,
+}
+```
+
+We have to repeat the same with the `SinglePostResponse` struct, and with
+all the types it references.
+
+After that, we can add our new endpoint and all the referenced types to the 
+`ApiDoc` struct in `src/api/v1.rs`:
+
+```rust
+#[derive(OpenApi)]
+#[openapi(
+    paths(
+        handlers::hello::hello,
+        handlers::posts::create,
+    ),
+    components(
+        schemas(
+            crate::services::post::CreatePostRequest,
+            crate::api::response::posts::SinglePostResponse,
+            crate::model::Post,
+            crate::model::PostStatus,
+        ),
+    ),
+    tags(
+        (name = "hello", description = "Hello"),
+        (name = "posts", description = "Posts"),
+    ),
+    servers(
+        (url = "/v1", description = "Local server"),
+    ),
+)]
+pub struct ApiDoc;
+```
+
+We can use OpenAPI to describe path parameters as well:
+
+```rust
+#[utoipa::path(
+    put,
+    path = "/posts/{id}",
+    params(
+        ("id" = i64, Path, description = "ID of the post"),
+    ),
+    tag = "posts",
+    request_body = UpdatePostRequest,
+    responses(
+        (status = 200, description = "Post updates", body = SinglePostResponse),
+    ),
+)]
+pub async fn update() {
+    // ...
+}
+```
+
+Here we specify that the `id` parameter is a path parameter of type `i64`.
+
+We can also describe query parameters in a similar way:
+
+```rust
+
+use utoipa::{IntoParams, ToSchema};
+
+#[derive(Deserialize, Debug, IntoParams)]
+#[into_params(parameter_in = Query)]
+pub struct PagingParams {
+    /// Page number
+    pub page: i64,
+    /// Items per page
+    pub per_page: i64,
+}
+
+#[utoipa::path(
+    get,
+    path = "/posts",
+    params(PagingParams),
+    tag = "posts",
+    responses(
+        (status = 200, description = "Posts list", body = PostsListResponse),
+    ),
+)]
+pub async fn list() {
+    // ...
+}
+```
+
+You can find the sample codes on
+[GitHub](https://github.com/Rust-Book-Collective/rust-api-code/tree/main/api-design/openapi/)
+
 
 TBD:
-- documentation
-- JSON schema
-- OpenAPI
-- Swagger / Utoipa
 - schemars
 
