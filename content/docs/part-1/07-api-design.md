@@ -476,7 +476,7 @@ have any in this example.
 
 Finally, in `src/api/mod.rs` we add the following snippet to generate the 
 OpenAPI  specification and a 
-[Swagger UI] (https://swagger.io/tools/swagger-ui/) at the same time:
+[Swagger UI](https://swagger.io/tools/swagger-ui/) at the same time:
 
 ```rust
 pub fn configure(state: Arc<ApplicationState>) -> Router {
