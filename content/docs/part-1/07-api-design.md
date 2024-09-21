@@ -499,7 +499,7 @@ utoipa-swagger-ui = { version = "6", features = ["axum"] }
 ```
 
 After building and starting the application, you can access the Swagger UI at
-`http://127.0.0.1/swagger-ui` and the OpenAPI specification at
+`http://127.0.0.1:8080/swagger-ui` and the OpenAPI specification at
 `http://127.0.0.1:8080/v1/api-docs/openapi.json`.
 
 The UI will look like this:
