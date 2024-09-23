@@ -571,6 +571,7 @@ impl Settings {
                 Environment::with_prefix(env_prefix)
                     .separator("__")
                     .prefix_separator("__"),
+            )
             .build()?;
 
         let settings = s.try_deserialize()?;
