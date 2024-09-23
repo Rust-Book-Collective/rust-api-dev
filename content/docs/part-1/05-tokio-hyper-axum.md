@@ -472,8 +472,8 @@ src
     handlers
       mod.rs
       hello.rs
-  mod.rs
-  v1.rs
+    mod.rs
+    v1.rs
 ```
 
 Where `src/api/mod.rs` builds the whole configuration by nesting all versions:
