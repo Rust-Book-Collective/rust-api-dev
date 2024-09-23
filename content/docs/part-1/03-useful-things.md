@@ -899,7 +899,7 @@ A type is `Sync` if it is safe to share between threads
 (`T` is `Sync` if and only if `&T` is `Send`).
 
 Usually primitive types like integers, floats and characters are
-both `Send` and `Sync`. Also, complex types (struts, tuples, enums)
+both `Send` and `Sync`. Also, complex types (structs, tuples, enums)
 built entirely from primitive types are usually `Send` and `Sync`
 too. But these types are not:
 
