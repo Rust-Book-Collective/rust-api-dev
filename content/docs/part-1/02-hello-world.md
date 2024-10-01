@@ -262,7 +262,7 @@ async fn hello() -> &'static str {
 ```
 
 That's quite simple, just returns a static string slice, 
-ontaining `Hello, world!`.
+containing `Hello, world!`.
 
 Now setup the routing for our web service in the `main` function, 
 and start a simple server:
