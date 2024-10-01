@@ -520,7 +520,7 @@ We also have to include `pub mod api` in `src/lib.rs`. Now we can modify
 the `start_tokio` method to use our routes:
 
 ```rust
-let router = crate::api::configure(state);
+let router = crate::api::configure();
 
 let listener = tokio::net::TcpListener::bind(addr).await?;
 axum::serve(listener, router.into_make_service()).await?;
