@@ -1163,7 +1163,7 @@ the basic operations on an entity in the REST API style.
 The recommended URL structure for these operations:
 
 - `GET /v1/posts` - list all the posts or query a subset of them
-- `GET /v1/posts/:id` or `GET /v1/posts/:slug` - get a specific post
+- `GET /v1/posts/:id` - get a specific post
 - `POST /v1/posts` - create a new post
 - `PUT /v1/posts/:id` - update an existing post
 - `DELETE /v1/posts/:id` - delete a post
@@ -1186,7 +1186,7 @@ pub fn configure(state: Arc<ApplicationState>) -> Router {
             get(handlers::posts::list).with_state(state.clone()),
         )
         .route(
-            "/posts/:slug",
+            "/posts/:id",
             get(handlers::posts::get).with_state(state.clone()),
         )
         .route(
@@ -1207,7 +1207,7 @@ pub fn configure(state: Arc<ApplicationState>) -> Router {
 - finally, the `posts::delete` handler will reply to the `DELETE` requests
 
 As you can see the URL pattern can include placeholders like `:id`
-and `:slug` - the handlers will receive these parameters via so-called
+ - the handlers will receive these parameters via so-called
 extractors. The `POST` and `PUT` requests must contain a JSON request
 body, the appropriate handler methods will receive the parsed request
 via extractors too.
